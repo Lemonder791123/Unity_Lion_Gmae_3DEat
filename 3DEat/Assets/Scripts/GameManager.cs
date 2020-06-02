@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;  //場景管理 API
 
 public class GameManager : MonoBehaviour
 {
@@ -57,13 +58,86 @@ public class GameManager : MonoBehaviour
         return total;
     }
 
+
     private void CountTime()
     {
-        //遊戲時間遞減 一禎的時間
+
+
+        if (countProp == countTotal) return;
+        
+        //遊戲時間  遞減 一禎的時間
         gameTime -= Time.deltaTime;
+
+        //遊戲時間 = 數學.鉗住(遊戲時間,最小值,最大值)
+        gameTime = Mathf.Clamp(gameTime, 0, 100);
+
         //更新倒數時間介面 ToString("f小數點位置")
         textTime.text = "倒數時間：" + gameTime.ToString("f2");
+        Lose();
     }
+
+    /// <summary>
+    /// 取得道具：雞腿　更新數量與介面、高粱  扣兩秒並更新介面
+    /// </summary>
+    /// <param name="prop"></param>
+    public void GetProp(string prop)
+    {
+        if (prop == "壽司")
+        {
+            countProp++;
+            textCount.text = "道具數量：" + countProp + " / " + countTotal;
+
+            Win();   //呼叫勝利方法
+
+        }
+        else if (prop == "臘腸")
+           
+        {
+                gameTime -= 2;
+                textTime.text = "倒數時間：" + gameTime.ToString("f2");  
+        }
+    }
+
+    /// <summary>
+    /// 勝利：吃光所有雞腿
+    /// </summary>
+    private void Win()
+    {
+        if (countProp == countTotal)            //如果壽司數量 = 壽司總數
+        {
+            final.alpha = 1;                    //顯示結束畫面、啟動互動、啟動遮擋
+            final.interactable = true;
+            final.blocksRaycasts = true;
+            textTitle.text = "過關";             //更新結束畫面標題
+        }
+    }
+    /// <summary>
+    /// 失敗：時間為零
+    /// </summary>
+    private void Lose()
+    {
+        if (gameTime == 0)            
+        {
+            final.alpha = 1;                    
+            final.interactable = true;
+            final.blocksRaycasts = true;
+            textTitle.text = "失敗";             
+            FindObjectOfType<Player>().enabled = false;     //取得 玩家.啟動 = false
+        }
+    }
+
+
+    public void Replay()
+    {
+        SceneManager.LoadScene("遊戲場景");
+    }
+
+    public void Quit()
+    {
+        Application.Quit();  //應用程式.離開()
+    }
+
+
 
     #endregion
 
@@ -73,7 +147,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         //道具總數 = 生成道具(道具一號,指定數量)
-        countTotal = CreatProp(porps[0],20);
+        countTotal = CreatProp(porps[0],10);
 
         textCount.text = "道具數量：0 / " + countTotal;
 

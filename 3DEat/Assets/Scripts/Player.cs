@@ -30,16 +30,21 @@ public class Player : MonoBehaviour
     /// </summary>
     private Vector3 angle;
 
-    //動作
-    //剛體
-    private Animator ani;
-    private Rigidbody rig;
+    
+    private Animator ani; //動作
+    private Rigidbody rig; //剛體
+    private AudioSource aud; //喇叭
+    private GameManager gm; //遊戲管理者
 
 
     /// <summary>
     /// 跳躍力道：從0慢慢增加
     /// </summary>
     private float jump;
+
+    [Header("壽司音效")]
+    public AudioClip soundSu;
+    public AudioClip soundDu;
     #endregion
     
     #region 方法
@@ -104,11 +109,24 @@ public class Player : MonoBehaviour
     }
 
     ///<summary>
-    ///碰到道具：碰到帶有標籤【漢堡】【壽司】的物件
+    ///碰到道具：碰到帶有標籤【漢堡】【壽司】【臘腸】的物件
     ///</summary>
-    private void HitProp()
+    private void HitProp(GameObject prop)
     {
+        print("碰到的物件標籤為：" + prop.name);
 
+        if (prop.tag == "壽司")
+        {
+            aud.PlayOneShot(soundSu, 2);    //喇叭.撥放一次音效(音效片段, 音量)
+            Destroy(prop);                  //刪除(物件)
+        }
+        else if (prop.tag == "臘腸")
+        {
+            aud.PlayOneShot(soundDu, 2);
+            Destroy(prop);
+        }
+
+        gm.GetProp(prop.tag);       //告知 GM 取得道具(將道具標籤傳過去)
     }
 
     #endregion
@@ -122,6 +140,11 @@ public class Player : MonoBehaviour
         //剛體 = 取得元件<剛體>()
         rig = GetComponent<Rigidbody>();
         ani = GetComponent<Animator>();
+        aud = GetComponent<AudioSource>();
+
+        //FOOT 僅限於場景上只有一個類別存在時使用
+        //例如：場景上只有一個 GameManager 類別時可以使用他來取得;
+        gm = FindObjectOfType<GameManager>();
     }
 
     private void FixedUpdate()
@@ -135,6 +158,39 @@ public class Player : MonoBehaviour
 
         Jump() ;
         
+    }
+
+    //碰撞事件：當物件碰撞開始時執行一次（沒有勾選　Is Trigger）
+    //collision 碰到物件的碰撞資訊
+    private void OnCollisionEnter(Collision collision)
+    {
+        
+    }
+    //碰撞事件：當物件碰撞 "離開時" 執行一次（沒有勾選　Is Trigger）
+    private void OnCollisionExit(Collision collision)
+    {
+
+    }
+    //碰撞事件：當物件碰撞 "開始時" 持續執行（沒有勾選　Is Trigger）60FPS
+    private void OnCollisionStay(Collision collision)
+    {
+
+    }
+    //觸發事件：當物件碰撞 "開始時" 執行一次（有勾選　Is Trigger）
+    private void OnTriggerEnter(Collider other)
+    {
+        //碰到道具(碰撞資訊.遊戲物件)
+        HitProp(other.gameObject);
+    }
+    //觸發事件：當物件碰撞 "離開時" 執行一次（有勾選　Is Trigger）
+    private void OnTriggerExit(Collider other)
+    {
+        
+    }
+    //觸發事件：當物件碰撞 "開始時" 持續執行（有勾選　Is Trigger）
+    private void OnTriggerStay(Collider other)
+    {
+    
     }
     #endregion
 
